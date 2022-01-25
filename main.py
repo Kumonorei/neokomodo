@@ -16,7 +16,7 @@ def main() -> None:
     map_height = 45
 
     tileset = tcod.tileset.load_truetype_font(
-        "fonts/whitrabt.ttf", 64, 64
+        "fonts/whitrabt.ttf", 16, 16
     )
 
     event_handler = EventHandler()
