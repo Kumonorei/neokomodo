@@ -26,9 +26,14 @@ class RectangularRoom:
         return center_x, center_y
 
     @property
+    def room(self) -> Tuple[slice, slice]:
+        """Return the full room including wall space"""
+        return slice(self.x1, self.x2), slice(self.y1, self.y2)
+
+    @property
     def inner(self) -> Tuple[slice, slice]:
         """Return the inner area of this room as a 2d array index"""
-        return slice(self.x1 + 1, self.x2), slice(self.y1 + 1, self.y2)
+        return slice(self.x1 + 1, self.x2 -1), slice(self.y1 + 1, self.y2 -1)
 
     def intersects(self, other: RectangularRoom) -> bool:
         """Return True if this room overlaps another RectangularRoom"""
@@ -38,6 +43,7 @@ class RectangularRoom:
             and self.y1 <= other.y2
             and self.y2 >= other.y1
         )
+
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
@@ -85,19 +91,24 @@ def generate_dungeon(
         if any(new_room.intersects(other_room) for other_room in rooms):
             continue # this room intersects, so go to the next attempt
         #if there are no intersections then the room is valid
-
+        # set the room to roomwalls
+        dungeon.tiles[new_room.room] = tile_types.roomwall
         # dig out the inner area
         dungeon.tiles[new_room.inner] = tile_types.floor
 
-        if len(rooms) == 0:
-            # this means this is the first room, where player will start
-            player.x, player.y = new_room.center
-        else: #for all other rooms
-            # dig out a tunnel between this room and the last
-            for x, y in tunnel_between(rooms[-1].center, new_room.center):
-                dungeon.tiles[x,y] = tile_types.floor
-        
         # finally append room to list
         rooms.append(new_room)
+
+        # dig tunnels through the roomwalls
+
+        for i, room in enumerate(rooms):
+            if i == 0:
+                # this means this is the first room, where player will start
+                player.x, player.y = room.center
+            else: #for all other rooms
+                # dig out a tunnel between this room and the last
+                for x, y in tunnel_between(rooms[i-1].center, room.center):
+                    dungeon.tiles[x,y] = tile_types.floor
+
 
     return dungeon
