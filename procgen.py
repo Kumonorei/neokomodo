@@ -5,11 +5,12 @@ from typing import Iterator, List, Tuple, TYPE_CHECKING
 
 import tcod
 
+import entity_factories
 from game_map import GameMap
 import tile_types
 
 if TYPE_CHECKING:
-    from entity import Entity
+    from engine import Engine
 
 class RectangularRoom:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -44,6 +45,23 @@ class RectangularRoom:
             and self.y2 >= other.y1
         )
 
+def place_entities(
+    room: RectangularRoom,
+    dungeon: GameMap,
+    maximum_monsters: int,
+) -> None:
+    number_of_monsters = random.randint(0, maximum_monsters)
+
+    for i in range(number_of_monsters):
+        x = random.randint(room.x1 + 1, room.x2 - 2)
+        y = random.randint(room.y1 + 1, room.y2 - 2)
+
+        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            if random.random() < 0.8:
+                entity_factories.menace.spawn(dungeon, x, y)
+            else:
+                entity_factories.droid.spawn(dungeon, x, y)
+
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
@@ -71,10 +89,12 @@ def generate_dungeon(
     room_max_size: int,
     map_width: int,
     map_height: int,
-    player: Entity,
+    max_monsters_per_room: int,
+    engine: Engine,
 ) -> GameMap:
     """Generate a new Dungeon Map"""
-    dungeon = GameMap(map_width, map_height)
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
 
     rooms: List[RectangularRoom] = []
 
@@ -99,16 +119,18 @@ def generate_dungeon(
         # finally append room to list
         rooms.append(new_room)
 
-        # dig tunnels through the roomwalls
+    # dig tunnels through the roomwall
+    for i, room in enumerate(rooms):
+        if i == 0:
+            # this means this is the first room, where player will start
+            player.place(*room.center, dungeon)
+        else: #for all other rooms
+            # dig out a tunnel between this room and the last
+            for x, y in tunnel_between(rooms[i-1].center, room.center):
+                dungeon.tiles[x,y] = tile_types.floor
 
-        for i, room in enumerate(rooms):
-            if i == 0:
-                # this means this is the first room, where player will start
-                player.x, player.y = room.center
-            else: #for all other rooms
-                # dig out a tunnel between this room and the last
-                for x, y in tunnel_between(rooms[i-1].center, room.center):
-                    dungeon.tiles[x,y] = tile_types.floor
-
+    # place monsters in rooms
+    for room in rooms:
+        place_entities(room, dungeon, max_monsters_per_room)
 
     return dungeon
