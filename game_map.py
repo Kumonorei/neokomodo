@@ -30,6 +30,10 @@ class GameMap:
         self.explored = np.full((width,height), fill_value=False, order="F") # Tiles player has seen before
 
     @property
+    def gamemap(self) -> GameMap:
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """Iterate over this map's living actors"""
         yield from (
