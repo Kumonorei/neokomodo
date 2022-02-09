@@ -49,8 +49,10 @@ def place_entities(
     room: RectangularRoom,
     dungeon: GameMap,
     maximum_monsters: int,
+    maximum_items: int,
 ) -> None:
     number_of_monsters = random.randint(0, maximum_monsters)
+    number_of_items = random.randint(0, maximum_items)
 
     for i in range(number_of_monsters):
         x = random.randint(room.x1 + 1, room.x2 - 2)
@@ -61,6 +63,13 @@ def place_entities(
                 entity_factories.menace.spawn(dungeon, x, y)
             else:
                 entity_factories.droid.spawn(dungeon, x, y)
+
+    for i in range(number_of_items):
+        x = random.randint(room.x1 + 1, room.x2 - 2)
+        y = random.randint(room.y1 + 1, room.y2 - 2)
+
+        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            entity_factories.health_drink.spawn(dungeon, x, y)
 
 
 def tunnel_between(
@@ -90,6 +99,7 @@ def generate_dungeon(
     map_width: int,
     map_height: int,
     max_monsters_per_room: int,
+    max_items_per_room: int,
     engine: Engine,
 ) -> GameMap:
     """Generate a new Dungeon Map"""
@@ -131,6 +141,6 @@ def generate_dungeon(
 
     # place monsters in rooms
     for room in rooms:
-        place_entities(room, dungeon, max_monsters_per_room)
+        place_entities(room, dungeon, max_monsters_per_room, max_items_per_room)
 
     return dungeon
