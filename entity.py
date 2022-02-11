@@ -106,6 +106,8 @@ class Actor(Entity):
         self.inventory = inventory
         self.inventory.parent = self
 
+        
+
     @property
     def is_alive(self) -> bool:
         """Returns True as long as this actor can perform actions"""
