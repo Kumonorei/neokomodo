@@ -25,8 +25,8 @@ def main() -> None:
     max_monsters_per_room = 2
     max_items_per_room = 2
 
-    tileset = tcod.tileset.load_truetype_font(
-        "fonts/whitrabt.ttf", 16, 16
+    tileset = tcod.tileset.load_tilesheet(
+        "terminal.png", 16, 16, tcod.tileset.CHARMAP_CP437
     )
 
     player = copy.deepcopy(entity_factories.player)
@@ -55,6 +55,7 @@ def main() -> None:
         screen_height,
         tileset=tileset,
         title="Neo Komodo",
+        renderer=tcod.context.RENDERER_SDL2,
         vsync=True,
     ) as context:
         root_console = tcod.Console(screen_width, screen_height, order="F")

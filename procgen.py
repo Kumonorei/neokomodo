@@ -59,7 +59,8 @@ def place_entities(
         y = random.randint(room.y1 + 1, room.y2 - 2)
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-            if random.random() < 0.8:
+            monster_chance = random.random()
+            if monster_chance < 0.8:
                 entity_factories.menace.spawn(dungeon, x, y)
             else:
                 entity_factories.droid.spawn(dungeon, x, y)
@@ -69,8 +70,25 @@ def place_entities(
         y = random.randint(room.y1 + 1, room.y2 - 2)
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-            entity_factories.health_drink.spawn(dungeon, x, y)
-
+            item_chance = random.random()
+            if item_chance < 0.5:
+                entity_factories.flame_burst.spawn(dungeon, x, y)
+            else:
+                entity_factories.cpu_overload.spawn(dungeon, x, y)
+            """
+            if item_chance < 0.4:
+                entity_factories.menace_energy.spawn(dungeon, x, y)
+            elif item_chance < 0.6:
+                entity_factories.large_menace_energy.spawn(dungeon, x, y)
+            elif item_chance < 0.7: 
+                entity_factories.lightning_gun.spawn(dungeon, x, y)
+            elif item_chance < 0.8:
+                entity_factories.cpu_hack.spawn(dungeon, x, y)
+            elif item_chance < 0.9:
+                entity_factories.flame_burst.spawn(dungeon, x, y)
+            else:
+                entity_factories.cpu_overload.spawn(dungeon, x, y)
+                """
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
