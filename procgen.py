@@ -71,11 +71,6 @@ def place_entities(
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             item_chance = random.random()
-            if item_chance < 0.5:
-                entity_factories.flame_burst.spawn(dungeon, x, y)
-            else:
-                entity_factories.cpu_overload.spawn(dungeon, x, y)
-            """
             if item_chance < 0.4:
                 entity_factories.menace_energy.spawn(dungeon, x, y)
             elif item_chance < 0.6:
@@ -88,7 +83,6 @@ def place_entities(
                 entity_factories.flame_burst.spawn(dungeon, x, y)
             else:
                 entity_factories.cpu_overload.spawn(dungeon, x, y)
-                """
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
@@ -126,6 +120,8 @@ def generate_dungeon(
 
     rooms: List[RectangularRoom] = []
 
+    center_of_last_room = (0, 0)
+
     for r in range(max_rooms):
         room_width = random.randint(room_min_size, room_max_size)
         room_height = random.randint(room_min_size, room_max_size)
@@ -160,5 +156,10 @@ def generate_dungeon(
     # place monsters in rooms
     for room in rooms:
         place_entities(room, dungeon, max_monsters_per_room, max_items_per_room)
+
+    # place down stairs in center of last room generated
+    center_of_last_room = rooms[(len(rooms)) - 1].center
+    dungeon.tiles[center_of_last_room] = tile_types.down_stairs
+    dungeon.downstairs_location = center_of_last_room
 
     return dungeon
