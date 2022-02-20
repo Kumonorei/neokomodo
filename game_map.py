@@ -33,7 +33,9 @@ class GameMap:
 
         self.x_offset = 0
         self.y_offset = 0
-        
+
+        self.name = "<no_name>"
+
     @property
     def gamemap(self) -> GameMap:
         return self
@@ -102,7 +104,7 @@ class GameMap:
         f_width: int, 
         f_height: int, 
         console: Console,
-        title: str = "<no name>"
+        title: str,
     ) -> None:
         """
         Render the map inside a frame of specified position and size
@@ -130,8 +132,8 @@ class GameMap:
         if y_origin < 0:
             y_origin = 0
 
-        x_end = x_origin + v_width 
-        y_end = y_origin + v_height 
+        x_end = x_origin + v_width +1
+        y_end = y_origin + v_height +1
 
         if x_end > self.width:
             x_diff = x_end - self.width
@@ -147,23 +149,14 @@ class GameMap:
         self.y_offset = y - y_origin + 1
 
 
-        print(f"player {self.engine.player.x},{self.engine.player.y}, origin {x_origin},{y_origin}, modifier {int(v_width/2)}, end {x_end}, {y_end}")
-       
-
-        slice_x = slice(x_origin, x_end-1)
-        slice_y = slice(y_origin, y_end-1)
+        slice_x = slice(x_origin, x_end -1)
+        slice_y = slice(y_origin, y_end -1)
 
         viewport_tiles = self.tiles[slice_x, slice_y]
         viewport_visible = self.visible[slice_x, slice_y]
         viewport_explored = self.explored[slice_x, slice_y]
-        
-        print(f"{len(viewport_tiles)}")
 
-        #for i in range(y_origin, y_origin+height-2):
-        #    for j in range(x_origin, x_origin+width-2):
-        #        console.print(x=x+j, y=y+i, string=f"{self.tiles[j, i]}")
-
-        console.tiles_rgb[x+1:x+v_width, y+1:y+v_height] = np.select(
+        console.tiles_rgb[x+1:x+v_width+1, y+1:y+v_height+1] = np.select(
             condlist=[viewport_visible, viewport_explored],
             choicelist=[viewport_tiles["light"], viewport_tiles["dark"]],
             default=tile_types.SHROUD,

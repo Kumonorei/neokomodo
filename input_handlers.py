@@ -336,14 +336,14 @@ class SelectIndexHandler(AskUserEventHandler):
         """Sets the cursor to the player when this handler is constructed"""
         super().__init__(engine)
         player = self.engine.player 
-        engine.mouse_location = player.x + self.engine.game_map.x_offset, player.y + self.engine.game_map.y_offset
+        engine.mouse_location = player.x, player.y
 
     def on_render(self, console: tcod.Console) -> None:
-        """Highlight the tile under the cursoe"""
+        """Highlight the tile under the cursor"""
         super().on_render(console)
         x, y = self.engine.mouse_location
-        console.tiles_rgb["bg"][x, y] = color.white
-        console.tiles_rgb["fg"][x, y] = color.black
+        console.tiles_rgb["bg"][x + self.engine.game_map.x_offset, y + self.engine.game_map.y_offset] = color.white
+        console.tiles_rgb["fg"][x + self.engine.game_map.x_offset, y + self.engine.game_map.y_offset] = color.black
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys"""
@@ -423,8 +423,8 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
         # Draw a rectangle around the targeted area so the player can see the area of effect
         console.draw_frame(
-            x=x - self.radius - 1,
-            y=y - self.radius - 1,
+            x=x - self.radius - 1 + self.engine.game_map.x_offset,
+            y=y - self.radius - 1 + self.engine.game_map.y_offset,
             width=self.radius ** 2,
             height=self.radius ** 2,
             fg=color.red,

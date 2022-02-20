@@ -100,6 +100,13 @@ def render_character_info(
     console.print(x=x_left, y=y+11, string=f"STR: {engine.player.fighter.power}")
     console.print(x=x_left, y=y+12, string=f"DEF: {engine.player.fighter.defense}")
 
+    # Print current target
+    render_names_at_mouse_location(
+        console=console,
+        x=x_left,
+        y=y+15,
+        engine=engine,
+    )
 
 def render_names_at_mouse_location(
     console: Console, x: int, y: int, engine: Engine

@@ -55,6 +55,33 @@ class MessageLog:
         """
         self.render_messages(console, x, y, width, height, self.messages)
 
+    def render_in_frame(
+        self,
+        console: tcod.Console,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+    ) -> None:
+        """
+        Render this log inside the given frame
+        'x', 'y', 'width', 'height' is the rectangle region
+        to render the frame
+        """
+
+        console.draw_frame(
+            x=x, 
+            y=y, 
+            width=width, 
+            height=height, 
+            title="Message History", 
+            clear=True, 
+            fg=(255, 255, 255), 
+            bg=(0, 0, 0),
+        )
+
+        self.render_messages(console, x+1, y+1, width-2, height-2, self.messages)
+
     @staticmethod
     def wrap(string: str, width: int) -> Iterable[str]:
         """Return a wrapped text message"""
