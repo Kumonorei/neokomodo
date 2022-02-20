@@ -30,6 +30,9 @@ class GameMap:
         self.explored = np.full((width,height), fill_value=False, order="F") # Tiles player has seen before
 
         self.downstairs_location = (0, 0)
+
+        self.x_offset = 0
+        self.y_offset = 0
         
     @property
     def gamemap(self) -> GameMap:
@@ -91,6 +94,93 @@ class GameMap:
                 console.print(
                     x=entity.x, y=entity.y, string=entity.char, fg=entity.color
                 )
+
+    def render_in_frame(
+        self, 
+        x: int, 
+        y: int, 
+        f_width: int, 
+        f_height: int, 
+        console: Console,
+        title: str = "<no name>"
+    ) -> None:
+        """
+        Render the map inside a frame of specified position and size
+        The map will scroll with the player
+        """
+
+        v_width=f_width-2
+        v_height=f_height-2
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=f_width,
+            height=f_height,
+            title=title,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        x_origin = self.engine.player.x - int(v_width/2)
+        if x_origin < 0:
+            x_origin = 0
+        y_origin = self.engine.player.y - int(v_height/2)
+        if y_origin < 0:
+            y_origin = 0
+
+        x_end = x_origin + v_width 
+        y_end = y_origin + v_height 
+
+        if x_end > self.width:
+            x_diff = x_end - self.width
+            x_origin -= x_diff
+            x_end -= x_diff
+
+        if y_end > self.height:
+            y_diff = y_end - self.height
+            y_origin -= y_diff
+            y_end -= y_diff
+        
+        self.x_offset = x - x_origin + 1
+        self.y_offset = y - y_origin + 1
+
+
+        print(f"player {self.engine.player.x},{self.engine.player.y}, origin {x_origin},{y_origin}, modifier {int(v_width/2)}, end {x_end}, {y_end}")
+       
+
+        slice_x = slice(x_origin, x_end-1)
+        slice_y = slice(y_origin, y_end-1)
+
+        viewport_tiles = self.tiles[slice_x, slice_y]
+        viewport_visible = self.visible[slice_x, slice_y]
+        viewport_explored = self.explored[slice_x, slice_y]
+        
+        print(f"{len(viewport_tiles)}")
+
+        #for i in range(y_origin, y_origin+height-2):
+        #    for j in range(x_origin, x_origin+width-2):
+        #        console.print(x=x+j, y=y+i, string=f"{self.tiles[j, i]}")
+
+        console.tiles_rgb[x+1:x+v_width, y+1:y+v_height] = np.select(
+            condlist=[viewport_visible, viewport_explored],
+            choicelist=[viewport_tiles["light"], viewport_tiles["dark"]],
+            default=tile_types.SHROUD,
+        )
+
+
+        entities_sorted_for_rendering = sorted(
+            self.entities, key=lambda x: x.render_order.value
+        )
+
+        for entity in entities_sorted_for_rendering:
+            # Only print entities in FOV
+            if self.visible[entity.x, entity.y]:
+                console.print(
+                    x=entity.x + self.x_offset, y=entity.y + self.y_offset, string=entity.char, fg=entity.color
+                )
+        
 
 class GameWorld:
     """

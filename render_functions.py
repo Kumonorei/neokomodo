@@ -4,6 +4,7 @@ from platform import mac_ver
 from typing import Tuple, TYPE_CHECKING
 
 import color
+import tcod
 
 if TYPE_CHECKING:
     from tcod import Console
@@ -24,16 +25,18 @@ def render_bar(
     console: Console,
     current_value: int,
     maximum_value: int,
+    x: int,
+    y: int,
     total_width: int,
 ) -> None:
     bar_width = int(float(current_value) / maximum_value * total_width)
 
-    console.draw_rect(x=0, y=45, width=total_width, height=1, ch=1, bg=color.bar_empty)
+    console.draw_rect(x=x, y=y, width=total_width, height=1, ch=1, bg=color.bar_empty)
 
     if bar_width > 0:
-        console.draw_rect(x=0, y=45, width=bar_width, height=1, ch=1, bg=color.bar_filled)
+        console.draw_rect(x=x, y=y, width=bar_width, height=1, ch=1, bg=color.bar_filled)
 
-    console.print(x=1, y=45, string=f"HP: {current_value}/{maximum_value}", fg=color.bar_text)
+    console.print(x=x+1, y=y, string=f"HP: {current_value}/{maximum_value}", fg=color.bar_text)
 
 def render_dungeon_level(
     console: Console, dungeon_level: int, location: Tuple[int. int]
@@ -45,13 +48,68 @@ def render_dungeon_level(
 
     console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
 
+def render_character_info(
+    console: Console, 
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    engine: Engine,
+    title: str = "Stats",
+) -> None:
+    """
+    Render the character stats at the given location
+    """
+    console.draw_frame(
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        title=title,
+        clear=True,
+        fg=(255, 255, 255),
+        bg=(0, 0, 0),
+    )
+
+    x_center = int(float (x + (width/2)))
+    x_left = x+2
+
+    # Print player name
+    console.print(x=x_center, y=y+2, string=engine.player.name, alignment=tcod.CENTER)
+
+    # Display HP bar
+    render_bar(
+        console=console,
+        current_value=(engine.player.fighter.hp),
+        maximum_value=(engine.player.fighter.max_hp),
+        x=x+2,
+        y=y+4,
+        total_width=width-4
+    )
+
+    # Print level info
+    console.print(x=x_left, y=y+6, string=f"Level {engine.player.level.current_level}")
+    console.print(
+        x=x_left, 
+        y=y+8, 
+        string=f"{engine.player.level.experience_to_next_level - engine.player.level.current_xp} XP to",
+    )
+    console.print(x=x_left, y=y+9, string="next level")
+
+    # Print some stats
+    console.print(x=x_left, y=y+11, string=f"STR: {engine.player.fighter.power}")
+    console.print(x=x_left, y=y+12, string=f"DEF: {engine.player.fighter.defense}")
+
+
 def render_names_at_mouse_location(
     console: Console, x: int, y: int, engine: Engine
 ) -> None:
     mouse_x, mouse_y = engine.mouse_location
 
     names_at_mouse_location = get_names_at_location(
-        x=mouse_x, y=mouse_y, game_map=engine.game_map
+        x=mouse_x, 
+        y=mouse_y, 
+        game_map=engine.game_map
     )
 
     console.print(x=x, y=y, string=names_at_mouse_location)

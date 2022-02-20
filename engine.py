@@ -23,6 +23,8 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
+        self.screen_width = 80
+        self.screen_height= 50
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
@@ -45,15 +47,18 @@ class Engine:
         self.game_map.explored |= self.game_map.visible
 
     def render(self, console: Console) -> None:
-        self.game_map.render(console)
+        #self.game_map.render(console)
+
 
         self.message_log.render(console=console, x=21, y=45, width=40, height=5)
 
-        render_functions.render_bar(
+        render_functions.render_character_info(
             console=console,
-            current_value=self.player.fighter.hp,
-            maximum_value=self.player.fighter.max_hp,
-            total_width=20,
+            x=0,
+            y=0,
+            width=15,
+            height=50,
+            engine=self,
         )
 
         render_functions.render_dungeon_level(
@@ -64,6 +69,8 @@ class Engine:
 
         render_functions.render_names_at_mouse_location(console=console, x=21, y=44, engine=self)
 
+        self.game_map.render_in_frame(x=15, y=0, f_width=80-15, f_height=50-8, console=console)
+   
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file"""
         save_data = lzma.compress(pickle.dumps(self))
