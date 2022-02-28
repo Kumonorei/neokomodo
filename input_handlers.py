@@ -144,7 +144,7 @@ class EventHandler(BaseEventHandler):
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
         if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
-            self.engine.mouse_location = event.tile.x, event.tile.y
+            self.engine.cursor_location = event.tile.x, event.tile.y
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()
@@ -336,12 +336,12 @@ class SelectIndexHandler(AskUserEventHandler):
         """Sets the cursor to the player when this handler is constructed"""
         super().__init__(engine)
         player = self.engine.player 
-        engine.mouse_location = player.x, player.y
+        engine.cursor_location = player.x, player.y
 
     def on_render(self, console: tcod.Console) -> None:
         """Highlight the tile under the cursor"""
         super().on_render(console)
-        x, y = self.engine.mouse_location
+        x, y = self.engine.cursor_location
         console.tiles_rgb["bg"][x + self.engine.game_map.x_offset, y + self.engine.game_map.y_offset] = color.white
         console.tiles_rgb["fg"][x + self.engine.game_map.x_offset, y + self.engine.game_map.y_offset] = color.black
 
@@ -357,17 +357,38 @@ class SelectIndexHandler(AskUserEventHandler):
             if event.mod & (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
                 modifier *= 20
 
-            x, y = self.engine.mouse_location
+            x, y = self.engine.cursor_location
             dx, dy = MOVE_KEYS[key]
             x += dx * modifier
             y += dy * modifier
-            # Clamp the cursor to the map size
-            x = max(0, min(x, self.engine.game_map.width - 1))
-            y = max(0, min(y, self.engine.game_map.height - 1))
-            self.engine.mouse_location = x, y
+            # Clamp the cursor to the viewport size
+            if x + self.engine.game_map.x_offset < self.engine.game_map.viewport_x:
+                x = self.engine.game_map.viewport_x - self.engine.game_map.x_offset
+            if x + self.engine.game_map.x_offset > self.engine.game_map.viewport_x + self.engine.game_map.viewport_width - 1:
+                x = self.engine.game_map.viewport_x + self.engine.game_map.viewport_width - self.engine.game_map.x_offset - 1
+
+            if y + self.engine.game_map.y_offset < self.engine.game_map.viewport_y:
+                y = self.engine.game_map.viewport_y - self.engine.game_map.y_offset
+            if y + self.engine.game_map.y_offset > self.engine.game_map.viewport_y + self.engine.game_map.viewport_height - 1:
+                y = self.engine.game_map.viewport_y + self.engine.game_map.viewport_height - self.engine.game_map.y_offset - 1
+            """x = max(
+                self.engine.game_map.viewport_x + 1, 
+                min(
+                    x - self.engine.game_map.viewport_x, 
+                    self.engine.game_map.viewport_x + self.engine.game_map.viewport_width
+                )
+            )
+            y = max(
+                self.engine.player.y - int(self.engine.game_map.viewport_height/2), 
+                min(
+                    y, 
+                    self.engine.player.y + int(self.engine.game_map.viewport_height/2)
+                )
+            )"""
+            self.engine.cursor_location = x, y
             return None
         elif key in CONFIRM_KEYS:
-            return self.on_index_selected(*self.engine.mouse_location)
+            return self.on_index_selected(*self.engine.cursor_location)
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[ActionOrHandler]:
@@ -419,17 +440,17 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         """Highlight the tile under the cursor"""
         super().on_render(console)
 
-        x, y = self.engine.mouse_location
+        x, y = self.engine.cursor_location
 
         # Draw a rectangle around the targeted area so the player can see the area of effect
-        console.draw_frame(
-            x=x - self.radius - 1 + self.engine.game_map.x_offset,
-            y=y - self.radius - 1 + self.engine.game_map.y_offset,
-            width=self.radius ** 2,
-            height=self.radius ** 2,
-            fg=color.red,
-            clear=False,
-        )
+        #console.draw_frame(
+        #    x=x - self.radius - 1 + self.engine.game_map.x_offset,
+        #    y=y - self.radius - 1 + self.engine.game_map.y_offset,
+        #    width=self.radius ** 2,
+        #    height=self.radius ** 2,
+        #    fg=color.red,
+        #    clear=False,
+        #)
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x,y))

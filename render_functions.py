@@ -101,22 +101,22 @@ def render_character_info(
     console.print(x=x_left, y=y+12, string=f"DEF: {engine.player.fighter.defense}")
 
     # Print current target
-    render_names_at_mouse_location(
+    render_names_at_cursor_location(
         console=console,
         x=x_left,
         y=y+15,
         engine=engine,
     )
 
-def render_names_at_mouse_location(
+def render_names_at_cursor_location(
     console: Console, x: int, y: int, engine: Engine
 ) -> None:
-    mouse_x, mouse_y = engine.mouse_location
+    cursor_x, cursor_y = engine.cursor_location
 
-    names_at_mouse_location = get_names_at_location(
-        x=mouse_x, 
-        y=mouse_y, 
+    names_at_cursor_location = get_names_at_location(
+        x=cursor_x, 
+        y=cursor_y, 
         game_map=engine.game_map
     )
 
-    console.print(x=x, y=y, string=names_at_mouse_location)
+    console.print(x=x, y=y, string=names_at_cursor_location)

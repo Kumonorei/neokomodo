@@ -34,6 +34,12 @@ class GameMap:
         self.x_offset = 0
         self.y_offset = 0
 
+        self.viewport_x = 0
+        self.viewport_y = 0
+
+        self.viewport_width = self.engine.screen_width
+        self.viewport_height = self.engine.screen_height
+
         self.name = "<no_name>"
 
     @property
@@ -113,6 +119,12 @@ class GameMap:
 
         v_width=f_width-2
         v_height=f_height-2
+
+        self.viewport_x = x + 1
+        self.viewport_y = y + 1
+
+        self.viewport_width = f_width - 2
+        self.viewport_height = f_height - 2
 
         console.draw_frame(
             x=x,

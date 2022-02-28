@@ -11,6 +11,7 @@ import exceptions
 from message_log import MessageLog
 import render_functions
 
+
 if TYPE_CHECKING:
     from entity import Actor
     from game_map import GameMap, GameWorld
@@ -21,7 +22,7 @@ class Engine:
 
     def __init__(self, player: Actor):
         self.message_log = MessageLog()
-        self.mouse_location = (0, 0)
+        self.cursor_location = (0, 0)
         self.player = player
         self.screen_width = 80
         self.screen_height= 50
@@ -56,8 +57,8 @@ class Engine:
             console=console, 
             x=sidebar_width, 
             y=42, 
-            width=80-sidebar_width, 
-            height=50-42
+            width=self.screen_width-sidebar_width, 
+            height=self.screen_height-42
         )
 
         render_functions.render_character_info(
@@ -65,7 +66,7 @@ class Engine:
             x=0,
             y=0,
             width=sidebar_width,
-            height=50,
+            height=self.screen_height,
             engine=self,
         )
 
@@ -74,8 +75,8 @@ class Engine:
         self.game_map.render_in_frame(
             x=sidebar_width, 
             y=0, 
-            f_width=80-sidebar_width, 
-            f_height=50-8, 
+            f_width=self.screen_width-sidebar_width, 
+            f_height=self.screen_height-8, 
             title=f"Dungeon Level {self.game_world.current_floor}", 
             console=console
         )

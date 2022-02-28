@@ -9,7 +9,7 @@ import color
 import exceptions
 import input_handlers
 import setup_game
-import engine
+
 
 
 def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
@@ -20,6 +20,7 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
 
 
 def main() -> None:
+
     screen_width = 80
     screen_height = 50
 
